@@ -29,6 +29,14 @@ func writeError(err error) {
 	os.Exit(1)
 }
 
+func copyHeader(dst, src http.Header) {
+	for k, vv := range src {
+		for _, v := range vv {
+			dst.Add(k, v)
+		}
+	}
+}
+
 // Proxy request from the http server to docker's
 // unix socket
 func proxy(w http.ResponseWriter, r *http.Request) {
@@ -49,6 +57,7 @@ func proxy(w http.ResponseWriter, r *http.Request) {
 	}
 	defer res.Body.Close()
 
+	copyHeader(w.Header(), res.Header)
 	if _, err := io.Copy(w, res.Body); err != nil {
 		log.Println(err)
 	}
